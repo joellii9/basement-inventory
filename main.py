@@ -1,4 +1,5 @@
 from datetime import date, timedelta
+import json
 
 class Article:
     def __init__(self, name, quantity, unit):
@@ -90,32 +91,59 @@ class Basement:
             lines.append(str(article))
         return "\n".join(lines)
 
+    def save(self, filename):
+        data = []
+        for article in self.articles.values():
+            data.append(article.to_dict())
+
+        with open(filename, "w", encoding="utf-8") as file:
+            json.dump(data, file, indent=2, ensure_ascii=False)
+
+    def load(self, filename):
+        try:
+            with open(filename, "r", encoding="utf-8") as file:
+                data = json.load(file)
+        except FileNotFoundError:
+            return
+
+        for item in data:
+            if item["type"] == "food":
+                article = Food(item["name"], item["quantity"], item["unit"], item["expiration_date"])
+            else:
+                article = Article(item["name"], item["quantity"], item["unit"])
+            self.add_article(article)
 
 
 
-
-
-
-article1 = Article("Waschmittel", 1, "Tabs (60 Stück)")
-article2 = Article("Waschmittel", 1, "Tabs (60 Stück)")
-food1 = Food("Milch", 1, "Liter", "2026-09-29")
 
 basement = Basement()
-basement.add_article(article1)
-basement.add_article(food1)
+basement.load("data/basement.json")
+print(basement)
 
-basement.add_article(article2)
 
-expiring = basement.get_expiring_soon(5)
 
-print(expiring)
+# article1 = Article("Waschmittel", 1, "Tabs (60 Stück)")
+# article2 = Article("Waschmittel", 1, "Tabs (60 Stück)")
+# food1 = Food("Milch", 1, "Liter", "2026-09-29")
 
-if not expiring:
-    print("Nichts läuft in den nächsten 7 Tagen ab.")
-else:
-    print("Läuft bald ab:")
-    for article in expiring.values():
-        print(f"- {article}")
+# basement = Basement()
+# basement.add_article(article1)
+# basement.add_article(food1)
 
-print(food1.to_dict())
+# basement.add_article(article2)
+
+# expiring = basement.get_expiring_soon(5)
+
+# print(expiring)
+
+# if not expiring:
+#     print("Nichts läuft in den nächsten 7 Tagen ab.")
+# else:
+#     print("Läuft bald ab:")
+#     for article in expiring.values():
+#         print(f"- {article}")
+
+# print(food1.to_dict())
+
+# basement.save("data/basement.json")
 
